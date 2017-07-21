@@ -27,7 +27,7 @@ stream.on('tweet', function (tweet) {
   console.log(tweet)
 })
 
-setTimeout(stream.stop, 10000)
+setTimeout(() => {stream.stop();}, 10000)
 
 // var phrase = chooseRandom(phraseArray) + ", " + chooseRandom(phraseArray);
 
