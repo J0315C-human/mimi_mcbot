@@ -1,4 +1,6 @@
 const Twit = require('twit');
+require('dotenv').config();
+
 
 const T = new Twit({
  consumer_key: process.env.BOT_CONSUMER_KEY,
@@ -6,22 +8,13 @@ const T = new Twit({
  access_token: process.env.BOT_ACCESS_TOKEN,
  access_token_secret: process.env.BOT_ACCESS_TOKEN_SECRET,
 });
-const phraseArray = [ "hey twitter",
-                    "im tweeting",
-                    "tweet tweet",
-                    "tweetstorm time... 1/22",
-                    "plz RT v important",
-                    "delete ur account",
-                    "it me",
-                    "same",
-                    "#dogpants go on 4 legs!!",
-                    "#thedress is blue and black" ];
+const trackArray = [ "here", "when", "these", "this", "those", "as" ];
 
 function chooseRandom(myArray) {
   return myArray[Math.floor(Math.random() * myArray.length)];
 }
 
-var stream = T.stream('statuses/filter', { track: "here", language: 'en' })
+var stream = T.stream('statuses/filter', { track: "as", language: 'en' })
 var ntweets = 1
 
 stream.on('tweet', function (tweet) {
