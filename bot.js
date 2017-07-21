@@ -21,9 +21,16 @@ function chooseRandom(myArray) {
   return myArray[Math.floor(Math.random() * myArray.length)];
 }
 
+var stream = T.stream('statuses/filter', { language: 'en' })
 
-var phrase = chooseRandom(phraseArray) + ", " + chooseRandom(phraseArray);
-
-T.post('statuses/update', { status: phrase }, function(err, data, response) {
-  console.log('data from callback:', data)
+stream.on('tweet', function (tweet) {
+  console.log(tweet)
 })
+
+setTimeout(stream.stop, 10000)
+
+// var phrase = chooseRandom(phraseArray) + ", " + chooseRandom(phraseArray);
+
+// T.post('statuses/update', { status: phrase }, function(err, data, response) {
+//   console.log('data from callback:', data)
+// })
