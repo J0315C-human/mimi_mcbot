@@ -21,10 +21,11 @@ function chooseRandom(myArray) {
   return myArray[Math.floor(Math.random() * myArray.length)];
 }
 
-var stream = T.stream('statuses/filter', { track: "plz", language: 'en' })
+var stream = T.stream('statuses/filter', { track: "here", language: 'en' })
+var ntweets = 1
 
 stream.on('tweet', function (tweet) {
-  console.log(tweet)
+  console.log(`#${ntweets++}: ${tweet.text}`)
 })
 
 setTimeout(() => {
