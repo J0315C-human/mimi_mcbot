@@ -21,13 +21,16 @@ function chooseRandom(myArray) {
   return myArray[Math.floor(Math.random() * myArray.length)];
 }
 
-var stream = T.stream('statuses/filter', { language: 'en' })
+var stream = T.stream('statuses/filter', { track: "plz", language: 'en' })
 
 stream.on('tweet', function (tweet) {
   console.log(tweet)
 })
 
-setTimeout(() => {stream.stop();}, 60000)
+setTimeout(() => {
+    console.log("stopping stream");
+    stream.stop();
+}, 10000)
 
 // var phrase = chooseRandom(phraseArray) + ", " + chooseRandom(phraseArray);
 
