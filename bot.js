@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const TWEETS_MIN = 3000;
 const GET_TWEET_AMT = 100;
-const RANDOM_USER_STREAM_MS = 1000;
+const RANDOM_USER_STREAM_MS = 3000;
 
 const testinput = [ 'RT @LoveIslandNot: When your mate asks if you wanna go out for some drinks #LoveIsland  https://t.co/fFWNdIdcQO',
   'RT @emilykrees: Lying on the beach in maga and a phone went off, boy behind me stood up and at the top of his voice went "guys I got a text…',
@@ -30,32 +30,26 @@ var stream = T.stream('statuses/filter', {
 )
 
 var users = [];
+var chosen = '';
 
-function chooseRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-};
+function popRandom(arr) {
+    const index = Math.floor(Math.random() * arr.length);
+    return arr.splice(index, 1)[0];
+}
 
 // get user tweets, excluding retweets unless they don't have enough 'status' tweets
 function getUserTweets(username){
 
     return T.get('search/tweets', { q: `from:${username} exclude:retweets`, count: GET_TWEET_AMT })
-    .then((result) => {
-        console.log("result.data.statuses length", result.data.statuses.length)
-        if (result.data.statuses.length > GET_TWEET_AMT){
-            return result;
-        } else {
-            return T.get('search/tweets', { q: `from:${username}`, count: GET_TWEET_AMT });
-        }
-    })
 }
 
 
 
-function printresults(data) {
-        console.log("number of statuses:", data.statuses.map(t => t.text))
+function processResults(data) {
+    const tweets = data.statuses.map(t => sanitizeTweet(t.text))
+    console.log(`Statuses for ${chosen.screen_name}:\n`, tweets);
+    return Promise.resolve(tweets.split(/\s+/));
 }
-
-
 
 
 // remove junk from replies and retweets
@@ -72,32 +66,58 @@ function getSentence() {
     return 
 }
 
-///?TEST
+// ///?TEST
 console.log("Sanitized Tweets:")
 console.log(testinput.map(s => sanitizeTweet(s)))
 console.log("\n\n")
 
 
 
-// stream.on('tweet', function (tweet) {
-//     const u = tweet.user;
-//     users.push({
-//         screen_name: u.screen_name,
-//         statuses_count: u.statuses_count,
-//     })
-// })
+stream.on('tweet', function (tweet) {
+    const u = tweet.user;
+    users.push({
+        screen_name: u.screen_name,
+        statuses_count: u.statuses_count,
+    })
+})
 
-// setTimeout(() => {
-//     console.log("stopping stream");
-//     stream.stop();
-//     // PICK A SEMIRANDOM USER OUT OF STREAM
-//     const chosen_one = chooseRandom(users.filter(u => u.statuses_count > TWEETS_MIN))
+function pickUserCheckTweets() {
+    
+    if (users.length === 0){
+        throw new Error("No user found with 100 statuses");
+    }
 
-//     console.log(chosen_one)
+    chosen = popRandom(users);
+    console.log(`chosen: ${chosen.screen_name} - users left ${users.length}`);
 
-//     getUserTweets(chosen_one.screen_name)
-//     .then(result => printresults(result.data))
-// }, RANDOM_USER_STREAM_MS)
+    return getUserTweets(chosen.screen_name)
+    .then(result => {
+        if (result.data.statuses.length < GET_TWEET_AMT){
+            console.log(`user had only ${result.data.statuses.length} tweets, retrying.`)
+            return pickUserCheckTweets();
+        } else {
+            return result;
+        }
+    })
+}
+
+
+
+function pickUserAndGo() {
+    console.log("stopping stream");
+    stream.stop();
+    users = users.filter(u => u.statuses_count > TWEETS_MIN);
+    
+    pickUserCheckTweets()
+    .then(result => {
+        const res = processResults(result.data);
+        
+        resolve(res);
+    })
+    .catch(err => console.log(err.message))
+}
+
+setTimeout(pickUserAndGo, RANDOM_USER_STREAM_MS)
 
 // T.post('statuses/update', { status: phrase }, function(err, data, response) {
 //   console.log('data from callback:', data)
