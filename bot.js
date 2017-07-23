@@ -48,7 +48,7 @@ function getUserTweets(username){
 function processResults(data) {
     const tweets = data.statuses.map(t => sanitizeTweet(t.text))
     console.log(`Statuses for ${chosen.screen_name}:\n`, tweets);
-    return Promise.resolve(tweets.split(/\s+/));
+    return Promise.resolve(tweets.map(t => t.split(/\s+/)));
 }
 
 
@@ -67,9 +67,9 @@ function getSentence() {
 }
 
 // ///?TEST
-console.log("Sanitized Tweets:")
-console.log(testinput.map(s => sanitizeTweet(s)))
-console.log("\n\n")
+// console.log("Sanitized Tweets:")
+// console.log(testinput.map(s => sanitizeTweet(s)))
+// console.log("\n\n")
 
 
 
@@ -109,11 +109,7 @@ function pickUserAndGo() {
     users = users.filter(u => u.statuses_count > TWEETS_MIN);
     
     pickUserCheckTweets()
-    .then(result => {
-        const res = processResults(result.data);
-        
-        resolve(res);
-    })
+    .then(result => processResults(result.data))
     .catch(err => console.log(err.message))
 }
 
