@@ -1,3 +1,7 @@
+
+//// STUFF FROM A TUTORIAL, LEFT IT HERE IN CASE I NEED A REFERENCE FOR POSTGRES STUFF
+
+
 var cool = require('cool-ascii-faces');
 var express = require('express');
 var app = express();

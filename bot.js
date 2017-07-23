@@ -6,17 +6,6 @@ const TWEETS_MIN = 3000;
 const GET_TWEET_AMT = 100;
 const RANDOM_USER_STREAM_MS = 3000;
 
-const testinput = [ 'RT @LoveIslandNot: When your mate asks if you wanna go out for some drinks #LoveIsland  https://t.co/fFWNdIdcQO',
-  'RT @emilykrees: Lying on the beach in maga and a phone went off, boy behind me stood up and at the top of his voice went "guys I got a text…',
-  'RT @m4gicg4ng: Remember when you were younger and ur pal said they would tell on you, put their hand up and then ask to go to the toilet, t…',
-  'RT @AlexAlphonso_: This sums up my day https://t.co/6yiw1mHMzG',
-  'RT @gideon10k: Everyone is abroad, I feel like a dickhead.',
-  'RT @ohhcami_: Never regret being a good woman to the wrong man, his loss.',
-  'RT @MayaJama: Sometimes I see girls touch my boyfriend an I wana wrap him in electric fencing with a sign that says "piss off" 😂 but only s…',
-  'RT @tineekamonet: I remember I was mid argument with a boy I used to speak to &amp; i stuck my middle finger up, he responded by telling me I n…',
-  'RT @ManLikeKofii: The worst one is when you can feel them giving you the eye but if you look back you\'ll lose all composure😂😭 https://t.co/…',
-  'RT @__Albatraoz__: My grandma is a nut. My grandfather passed and my grandma said "he got a lot of nerve pulling some shit like this today"😂' ];
-
 const T = new Twit({
  consumer_key: process.env.BOT_CONSUMER_KEY,
  consumer_secret: process.env.BOT_CONSUMER_SECRET,
@@ -39,12 +28,11 @@ function popRandom(arr) {
 
 // get user tweets, excluding retweets unless they don't have enough 'status' tweets
 function getUserTweets(username){
-
     return T.get('search/tweets', { q: `from:${username} exclude:retweets`, count: GET_TWEET_AMT })
 }
 
 
-
+// process tweets into consumable form for markov-words functions
 function processResults(data) {
     const tweets = data.statuses.map(t => sanitizeTweet(t.text))
     console.log(`Statuses for ${chosen.screen_name}:\n`, tweets);
@@ -61,18 +49,17 @@ function sanitizeTweet(t) {
 }
 
 // the only function in this file that deals with markov-words stuff
-function getSentence() {
+function getParodyAndTweet(sentences, screen_name) {
+    const parody = `@${screen_name}: ${markov.createParodyTweet(sentences)}`;
+    console.log(parody);
 
-    return 
+    T.post('statuses/update', { status: parody }, function(err, data, response) {
+        console.log('data from callback:', (data.text || data))
+
+    })
 }
 
-// ///?TEST
-// console.log("Sanitized Tweets:")
-// console.log(testinput.map(s => sanitizeTweet(s)))
-// console.log("\n\n")
-
-
-
+// start up stream to get a bunch of tweets
 stream.on('tweet', function (tweet) {
     const u = tweet.user;
     users.push({
@@ -81,8 +68,9 @@ stream.on('tweet', function (tweet) {
     })
 })
 
+
+// find a user with 100 non-retweet statuses
 function pickUserCheckTweets() {
-    
     if (users.length === 0){
         throw new Error("No user found with 100 statuses");
     }
@@ -102,19 +90,14 @@ function pickUserCheckTweets() {
 }
 
 
-
-function pickUserAndGo() {
+// pick a user, check their tweets, generate parody, and tweet 'em
+setTimeout(() => {
     console.log("stopping stream");
     stream.stop();
     users = users.filter(u => u.statuses_count > TWEETS_MIN);
     
     pickUserCheckTweets()
-    .then(result => processResults(result.data))
+    .then(result => processResults(result.data)
+        .then((sentences) => getParodyAndTweet(sentences, chosen.screen_name)))
     .catch(err => console.log(err.message))
-}
-
-setTimeout(pickUserAndGo, RANDOM_USER_STREAM_MS)
-
-// T.post('statuses/update', { status: phrase }, function(err, data, response) {
-//   console.log('data from callback:', data)
-// })
+}, RANDOM_USER_STREAM_MS)
