@@ -74,7 +74,7 @@ function pickUserCheckTweets() {
     if (users.length === 0){
         throw new Error("No user found with 100 statuses");
     }
-
+    
     chosen = popRandom(users);
     console.log(`chosen: ${chosen.screen_name} - users left ${users.length}`);
 
@@ -94,10 +94,21 @@ function pickUserCheckTweets() {
 setTimeout(() => {
     console.log("stopping stream");
     stream.stop();
-    users = users.filter(u => u.statuses_count > TWEETS_MIN);
-    
-    pickUserCheckTweets()
+
+    var userFlag = process.argv.indexOf('user');
+
+    var getTweets, user_arg;
+
+    if (userFlag > 0){ // tweet to a specific user
+        chosen = {screen_name: process.argv[userFlag + 1]};
+        getTweets = () => getUserTweets(chosen.screen_name);
+    } else {
+        users = users.filter(u => u.statuses_count > TWEETS_MIN);
+        getTweets = () => pickUserCheckTweets();
+    }
+
+    getTweets()
     .then(result => processResults(result.data)
         .then((sentences) => getParodyAndTweet(sentences, chosen.screen_name)))
-    .catch(err => console.log(err.message))
+    //.catch(err => console.log(err.message))
 }, RANDOM_USER_STREAM_MS)

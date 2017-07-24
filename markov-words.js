@@ -42,8 +42,9 @@ const createParody = (sentences, linksParam, recursionCount) => {
     const links = linksParam? linksParam : createPairs(sentences);
     var recurCount = recursionCount? recursionCount+1 : 0;
 
-    var sentence = pickRand(links.filter(L => L.prev[0] == "{*START}")).prev;    
-    while (addNext(links, sentence) !== "{*END}"){}
+    var sentence = pickRand(links.filter(L => L.prev[0] == "{*START}")).prev;   
+
+    while (addNext(links, sentence)){}
 
     sentence = sentence
     .splice(1, sentence.length-2)
@@ -62,13 +63,18 @@ const addNext = (links, sentence) => {
     // var prev1 = sentence[sentence.length-2];
     // var prev2 = sentence[sentence.length-1];
     var prev1 = sentence[sentence.length-1];
-
+    if (prev1 === "{*END}"){
+        return false;
+    }
     const validLinks = links.filter((L) => 
     (L.prev[0] == prev1));
     // (L.prev[0] == prev1 && L.prev[1] == prev2));
+    console.log("prev word: ", prev1, " sentence: ", sentence.join(' '))
+    console.log("valid links: ", validLinks);
     var nextword = pickRand(validLinks).next;
     sentence.push(nextword)
-    return nextword;
+
+    return true;
 }
 
 const pickRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
