@@ -1,3 +1,8 @@
+# About mimi_mcbot
+
+This is used in a bot that I made, currently running on heroku and serving up tweets for @mimi_mcbot.
+The text generation algorithm is from [this book](https://tfetimes.com/wp-content/uploads/2015/04/ProgrammingPearls2nd.pdf) (look at pg. 24).
+
 # node-js-getting-started
 
 A barebones Node.js app using [Express 4](http://expressjs.com/).
@@ -7,6 +12,7 @@ This application supports the [Getting Started with Node on Heroku](https://devc
 ## Running Locally
 
 Make sure you have [Node.js](http://nodejs.org/) and the [Heroku CLI](https://cli.heroku.com/) installed.
+
 
 ```sh
 $ git clone git@github.com:heroku/node-js-getting-started.git # or clone your own fork
